@@ -36,6 +36,11 @@ TZ=Europe/Moscow
 REPEAT_NOTIFY=1
 NOTIFY_ON_CREATE=1
 ANNOUNCE_AUTOTRACK=0
+
+# Players registry snapshot (SQLite -> JSON)
+# Bot will export ./data/players.snapshot.json every day at given local time.
+PLAYERS_SNAPSHOT_ENABLED=1
+PLAYERS_SNAPSHOT_TIME=04:00
 """,
             encoding="utf-8",
         )
@@ -64,6 +69,10 @@ class Config:
     notify_on_create: bool
     announce_autotrack: bool
 
+    # Players registry snapshot (SQLite -> JSON)
+    players_snapshot_enabled: bool
+    players_snapshot_time: str
+
 def load_config() -> Config:
     token = os.getenv("BOT_TOKEN", "").strip()
     if not token:
@@ -76,6 +85,7 @@ def load_config() -> Config:
             x = x.strip()
             if x:
                 admin_ids.add(int(x))
+
     # DB path: default is ./data/bot.db relative to the project directory (not CWD).
     db_path_raw = (os.getenv("DB_PATH") or "").strip()
     if not db_path_raw:
@@ -86,9 +96,8 @@ def load_config() -> Config:
     if not p_raw.is_absolute() and p_raw.parent == Path('.'):
         p_raw = Path('data') / p_raw
 
-    project_dir = Path(__file__).resolve().parent
+    project_dir = _project_dir()
     db_path = str((project_dir / p_raw).resolve()) if not p_raw.is_absolute() else str(p_raw)
-
     tz = os.getenv("TZ", "Europe/Moscow").strip() or "Europe/Moscow"
 
     repeat_notify = _as_bool(os.getenv("REPEAT_NOTIFY", "1"), default=True)
@@ -101,6 +110,9 @@ def load_config() -> Config:
     # For debugging during tests: send a short message in the group when a post is auto-tracked.
     announce_autotrack = _as_bool(os.getenv("ANNOUNCE_AUTOTRACK", "0"), default=False)
 
+    players_snapshot_enabled = _as_bool(os.getenv("PLAYERS_SNAPSHOT_ENABLED", "1"), default=True)
+    players_snapshot_time = os.getenv("PLAYERS_SNAPSHOT_TIME", "04:00").strip() or "04:00"
+
     return Config(
         bot_token=token,
         admin_ids=admin_ids,
@@ -109,4 +121,6 @@ def load_config() -> Config:
         repeat_notify=repeat_notify,
         notify_on_create=notify_on_create,
         announce_autotrack=announce_autotrack,
+        players_snapshot_enabled=players_snapshot_enabled,
+        players_snapshot_time=players_snapshot_time,
     )

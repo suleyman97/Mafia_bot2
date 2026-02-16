@@ -40,6 +40,31 @@ def normalize_name(name: str) -> str:
     s = s.lstrip("@").strip(_TRIM_CHARS)
     return s.lower()
 
+
+def beautify_display_name(name: str) -> str:
+    """Make a name look nicer for inserts into the post.
+
+    If the user typed a nickname fully in lowercase (latin/cyrillic), we upper-case
+    the first letter we can find. We keep the rest unchanged to preserve stylistic
+    choices (e.g. "black provokator" -> "Black provokator").
+    """
+    s = (name or "").strip()
+    if not s:
+        return s
+
+    # If there is already an uppercase letter, keep as-is.
+    if any(ch.isalpha() and ch.isupper() for ch in s):
+        return s
+
+    # If all cased letters are lowercase, uppercase the first alphabetical char.
+    if any(ch.isalpha() for ch in s) and s.lower() == s:
+        chars = list(s)
+        for i, ch in enumerate(chars):
+            if ch.isalpha():
+                chars[i] = ch.upper()
+                return "".join(chars)
+    return s
+
 def extract_event_title(text: str) -> str:
     lines = [ln.strip() for ln in text.splitlines()]
     for ln in lines[:8]:
