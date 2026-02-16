@@ -3,7 +3,48 @@ from dataclasses import dataclass
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+
+def _project_dir() -> Path:
+    return Path(__file__).resolve().parent
+
+
+def _ensure_data_env_file() -> Path:
+    """Ensure ./data/.env exists (relative to project directory) and return its path."""
+    project_dir = _project_dir()
+    data_dir = project_dir / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    env_path = data_dir / ".env"
+    if not env_path.exists():
+        env_path.write_text(
+            """# Mafia Notify Bot configuration
+# This file is auto-created in ./data/.env (relative to the project directory).
+# Fill BOT_TOKEN (required) and ADMIN_IDS (optional) before запуском.
+
+# Telegram bot token from @BotFather
+BOT_TOKEN=
+
+# Comma-separated Telegram user IDs who can manage the bot
+ADMIN_IDS=
+
+# Database path (relative to project directory)
+DB_PATH=data/bot.db
+
+# Timezone for human-readable dates
+TZ=Europe/Moscow
+
+# Testing flags
+REPEAT_NOTIFY=1
+NOTIFY_ON_CREATE=1
+ANNOUNCE_AUTOTRACK=0
+""",
+            encoding="utf-8",
+        )
+    return env_path
+
+
+# Always load env vars from ./data/.env (relative to project directory)
+_ENV_PATH = _ensure_data_env_file()
+load_dotenv(dotenv_path=_ENV_PATH, override=False)
 
 def _as_bool(value: str, default: bool = False) -> bool:
     v = (value or "").strip().lower()
@@ -26,7 +67,7 @@ class Config:
 def load_config() -> Config:
     token = os.getenv("BOT_TOKEN", "").strip()
     if not token:
-        raise RuntimeError("BOT_TOKEN is missing in environment (.env)")
+        raise RuntimeError(f"BOT_TOKEN is missing. Put it into {_ENV_PATH} (BOT_TOKEN=...) or set env var BOT_TOKEN")
 
     admin_raw = os.getenv("ADMIN_IDS", "").strip()
     admin_ids: set[int] = set()

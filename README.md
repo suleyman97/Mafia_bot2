@@ -10,8 +10,8 @@ python -m venv .venv
 .\.venv\Scriptsctivate
 python -m pip install -U pip setuptools wheel
 pip install -r requirements.txt
-copy .env.example .env
-# edit .env (BOT_TOKEN, ADMIN_IDS)
+# при первом запуске бот автоматически создаст файл настроек: ./data/.env
+# открой ./data/.env и заполни BOT_TOKEN (и при желании ADMIN_IDS)
 python main.py
 ```
 
@@ -30,6 +30,7 @@ Group (admins only):
 - Ручной /track удалён: всё работает автоматически.
 
 ## .env flags (тестирование)
+- Файл настроек находится в `./data/.env` (создаётся автоматически при первом запуске).
 - По умолчанию база хранится в `./data/bot.db` (путь считается относительно папки проекта, а не текущей рабочей директории).
 - REPEAT_NOTIFY=1 — повторные уведомления (игнорировать notify_log)
 - NOTIFY_ON_CREATE=1 — уведомлять сразу при создании/копировании новой записи
