@@ -1,3 +1,16 @@
+# secrets
+.env
+.env.*
+*.env
+
+# sqlite
+*.db
+*.sqlite
+*.sqlite3
+
+# persistent runtime data
+data/
+
 ### AL ###
 #Template for AL projects for Dynamics 365 Business Central
 #launch.json folder
